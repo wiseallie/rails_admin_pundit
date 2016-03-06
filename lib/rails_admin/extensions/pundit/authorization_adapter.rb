@@ -8,7 +8,7 @@ module RailsAdmin
         # See the +authorize_with+ config method for where the initialization happens.
         def initialize(controller)
           @controller = controller
-          @controller.class.send(:alias_method, :pundit_user, :_current_user)
+          #@controller.class.send(:alias_method, :pundit_user, :_current_user)
         end
 
         # This method is called to find authorization policy
@@ -16,7 +16,7 @@ module RailsAdmin
           begin
             @controller.policy(record)
           rescue ::Pundit::NotDefinedError
-            ::ApplicationPolicy.new(@controller.send(:_current_user), record)
+            ::ApplicationPolicy.new(@controller.send(:pudit_user), record)
           end
         end
         private :policy
@@ -28,6 +28,7 @@ module RailsAdmin
         # instance if it is available.
         def authorize(action, abstract_model = nil, model_object = nil)
           @controller.instance_variable_set(:@_policy_authorized, true)
+          @controller.instance_variable_set(:@_pundit_policy_authorized, true)
           record = model_object || abstract_model && abstract_model.model
           unless policy(record).rails_admin?(action)
             raise ::Pundit::NotAuthorizedError, "not allowed to #{action} this #{record}"
